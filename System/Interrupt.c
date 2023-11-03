@@ -3,9 +3,11 @@
 #include "sys.h"
 #include "OLED.h"
 #include "ICM_42688_P.h"
+#include "bmp280.h"
 extern GYRO Gyro_Get;
 extern ACC Acc_Get;
 extern TEMP Temp;
+extern BMP_280 bmp280;
 void EXIT_INT(){
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
@@ -46,15 +48,16 @@ void EXTI0_IRQHandler(void)
 			/*如果出现数据乱跳的现象，可再次判断引脚电平，以避免抖动*/
 			if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0) == 0)
 			{
-				PAout(1)=~PAout(1);
+				PCout(13)=~PCout(13);
 				GYRO_ACC_TEMP_GET();
-				OLED_ShowSignedNum(1, 1, Acc_Get.X, 5);
-				OLED_ShowSignedNum(2, 1, Acc_Get.Y, 5);
-				OLED_ShowSignedNum(3, 1, Acc_Get.Z, 5);
-				OLED_ShowSignedNum(1, 7, Gyro_Get.X, 5);
-				OLED_ShowSignedNum(2, 7, Gyro_Get.Y, 5);
-				OLED_ShowSignedNum(3, 7, Gyro_Get.Z, 5);
-				OLED_ShowSignedNum(4, 1, Temp.T, 5);
+//				OLED_ShowSignedNum(1, 1, Acc_Get.X, 5);
+//				OLED_ShowSignedNum(2, 1, Acc_Get.Y, 5);
+//				OLED_ShowSignedNum(3, 1, Acc_Get.Z, 5);
+//				OLED_ShowSignedNum(1, 7, Gyro_Get.X, 5);
+//				OLED_ShowSignedNum(2, 7, Gyro_Get.Y, 5);
+//				OLED_ShowSignedNum(3, 7, Gyro_Get.Z, 5);
+				OLED_ShowSignedNum(1, 1, Temp.T, 5);
+				OLED_ShowSignedNum(4, 1, (int)bmp280.asl, 5);
 			}
 			EXTI_ClearITPendingBit(EXTI_Line0);
 		}
