@@ -50,14 +50,15 @@ void EXTI0_IRQHandler(void)
 			{
 				PCout(13)=~PCout(13);
 				GYRO_ACC_TEMP_GET();
+				printf("%.2f,%.2f,%.2f£¬%.2f\r\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,bmp280.asl);
 //				OLED_ShowSignedNum(1, 1, Acc_Get.X, 5);
 //				OLED_ShowSignedNum(2, 1, Acc_Get.Y, 5);
 //				OLED_ShowSignedNum(3, 1, Acc_Get.Z, 5);
 //				OLED_ShowSignedNum(1, 7, Gyro_Get.X, 5);
 //				OLED_ShowSignedNum(2, 7, Gyro_Get.Y, 5);
 //				OLED_ShowSignedNum(3, 7, Gyro_Get.Z, 5);
-				OLED_ShowSignedNum(1, 1, Temp.T, 5);
-				OLED_ShowSignedNum(4, 1, (int)bmp280.asl, 5);
+//				OLED_ShowSignedNum(1, 1, Temp.T, 5);
+//				OLED_ShowSignedNum(4, 1, (int)bmp280.asl, 5);
 			}
 			EXTI_ClearITPendingBit(EXTI_Line0);
 		}

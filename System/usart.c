@@ -1,14 +1,7 @@
 #include "sys.h"
 #include "usart.h"	  
 
-extern float flag;
 u8 Res=0;
-int Data=0;
-int Flag=0;
-int Pack=0;
-
-
-
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -173,24 +166,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 						
 					
 				}
-				//pack
-						if(Res==0xFA)
-						{
-							Flag=1;
-							Pack=0;
-						}
-						if(Res==0xCF)
-						{
-							Flag=0;
-							Pack=1;
-						}
-						if(Flag==1)
-						{
-							Data <<= 8;
-							Data|=Res;
-						}
-						
-				//PCout(13)=~PCout(13);
+				USART_SendData(USART3,Res);
      }
 		
 } 

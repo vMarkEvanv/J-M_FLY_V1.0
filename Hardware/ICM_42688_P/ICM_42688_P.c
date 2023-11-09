@@ -16,7 +16,7 @@ void ICM_IIC_Delay(void){
 	delay_us(2);
 }
 /**************************************************/
-/*函数名：Port_Init;***********************/
+/*函数名：ICM_Port_Init;***********************/
 /*功能：初始化硬件IIC通道;************/
 /*输入：无;****************************************/
 /*输出：无;****************************************/
@@ -30,7 +30,7 @@ void ICM_Port_Init(){
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
   GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIO 
 	
-  GPIO_SetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_7);						 //PB10,PB11 输出高	
+  GPIO_SetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_7);						 
 
 }	  
 

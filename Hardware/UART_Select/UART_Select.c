@@ -1,9 +1,7 @@
 #include "stm32f10x.h"                  // Device header
 #include "UART_Select.h"
 #include "sys.h"
-void UART3_INIT(){
-	
-}
+
 void SELECT_Port_INIT(){
 
 	GPIO_InitTypeDef  GPIO_InitStructure;
@@ -20,5 +18,5 @@ void SELECT_Port_INIT(){
   GPIO_Init(GPIOA, &GPIO_InitStructure);					 //根据设定参数初始化GPIO 
 	
   GPIO_ResetBits(GPIOA,GPIO_Pin_6|GPIO_Pin_7);		
-	GPIO_SetBits(GPIOB,GPIO_Pin_1);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_1);
 }
