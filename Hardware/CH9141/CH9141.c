@@ -140,8 +140,8 @@ void USART3_IRQHandler(void)
 				} 
 		}
 		USART3_RX_Data();
-		PCout(13)=~PCout(13);
-		USART_SendData(USART1,Res);
+		//PCout(13)=~PCout(13);
+		//USART_SendData(USART1,Res);
 	}  				 											 
 }  
 

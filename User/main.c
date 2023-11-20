@@ -21,7 +21,7 @@ int main(void)
 	SELECT_Port_INIT();
 	CH9141_Port_Init();
 	CH9141_UART_Init(115200);
-	//CH9141_EN();
+	CH9141_EN();
 	CH9141_Init();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -32,14 +32,15 @@ int main(void)
 	GPIO_SetBits(GPIOC,GPIO_Pin_13);
 	GPIO_ResetBits(GPIOC,GPIO_Pin_13);
 	PCout(13)=1;
-	
+	//OLED_Init();
+	//OLED_ShowChar(1,1,'a');
 	//PAout(1)=1;
-	//ICM_Port_Init();
-	//EXIT_INT();
-	//ICM_INIT();
+	ICM_Port_Init();
+	EXIT_INT();
+	ICM_INIT();
 	
-	//IIC_Init();
-	//while(!bmp280Init());
+	IIC_Init();
+	while(!bmp280Init());
 
 	
 	//GYRO_ACC_TEMP_GET();
@@ -47,7 +48,7 @@ int main(void)
 	while(1)
 	{
 		//printf("123");
-		//bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
+		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
 		
 
 	}
