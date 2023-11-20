@@ -60,14 +60,14 @@ void TIM_Interrupt_Init(TIM_TypeDef* TIMx, unsigned int arr, unsigned int psc)
 }
 
 //interrupt Service fuction temp
-//void TIM2_IRQHandler(void)
-//{
-//	if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
-//	{
-//		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-//		 PCout(13)=~PCout(13);
-//	}
-//}
+void TIM2_IRQHandler(void)
+{
+	if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
+	{
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+		 PCout(13)=~PCout(13);
+	}
+}
 
 
 

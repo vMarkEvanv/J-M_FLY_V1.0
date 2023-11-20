@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\start;.\User;.\Lib;.\Hardware\OLED;.\Hardware;.\System;.\Hardware\ICM_42688_P;.\Hardware\BME280;.\Hardware\UART_Select;.\Hardware\BMP280;.\Hardware\CH9141;.\Hardware\SDIO</IncludePath>
+              <IncludePath>.\start;.\User;.\Lib;.\Hardware;.\System;.\Hardware\ICM_42688_P;.\Hardware\BME280;.\Hardware\UART_Select;.\Hardware\BMP280;.\Hardware\CH9141;.\Hardware\SDIO;.\Hardware\OLED_0.87;.\Hardware\FLY_Control_Logic</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -653,11 +653,6 @@
           <GroupName>Hardware</GroupName>
           <Files>
             <File>
-              <FileName>OLED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Hardware\OLED\OLED.c</FilePath>
-            </File>
-            <File>
               <FileName>ICM_42688_P.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Hardware\ICM_42688_P\ICM_42688_P.c</FilePath>
@@ -681,6 +676,16 @@
               <FileName>sdio_sdcard.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Hardware\SDIO\sdio_sdcard.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\OLED_0.87\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>FLY_Control_Logic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\FLY_Control_Logic\FLY_Control_Logic.c</FilePath>
             </File>
           </Files>
         </Group>

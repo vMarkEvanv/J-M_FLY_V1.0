@@ -1629,7 +1629,58 @@ u8 SD_WriteDisk(u8*buf,u32 sector,u8 cnt)
 
 
 
+/**********************实例主函数程序************************/
+//#include "sys.h"
+//#include "delay.h"
+//#include "usart.h"  		 	 
+//#include "sdio_sdcard.h"   
+// 
+////通过串口打印SD卡相关信息
+//void show_sdcard_info(void)
+//{
+//	switch(SDCardInfo.CardType)
+//	{
+//		case SDIO_STD_CAPACITY_SD_CARD_V1_1:printf("Card Type:SDSC V1.1\r\n");break;
+//		case SDIO_STD_CAPACITY_SD_CARD_V2_0:printf("Card Type:SDSC V2.0\r\n");break;
+//		case SDIO_HIGH_CAPACITY_SD_CARD:printf("Card Type:SDHC V2.0\r\n");break;
+//		case SDIO_MULTIMEDIA_CARD:printf("Card Type:MMC Card\r\n");break;
+//	}	
+//  	printf("Card ManufacturerID:%d\r\n",SDCardInfo.SD_cid.ManufacturerID);	//制造商ID
+// 	printf("Card RCA:%d\r\n",SDCardInfo.RCA);								//卡相对地址
+//	printf("Card Capacity:%d MB\r\n",(u32)(SDCardInfo.CardCapacity>>20));	//显示容量
+// 	printf("Card BlockSize:%d\r\n\r\n",SDCardInfo.CardBlockSize);			//显示块大小
+//}  
+// int main(void)
+// {
 
 
+//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
+//	GPIO_InitTypeDef GPIO_InitStructure;
+//	GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_Out_PP;
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//	GPIO_Init(GPIOC, &GPIO_InitStructure);
+//	GPIO_SetBits(GPIOC,GPIO_Pin_13);
+//	GPIO_ResetBits(GPIOC,GPIO_Pin_13);
+//	PCout(13)=1;	 
+//	u8 key;		 
+//	u32 sd_size;
+//	u8 t=0;	
+//	u8 *buf=0;
+//  
+
+//	delay_init();	    	 //延时函数初始化	  
+//  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置中断优先级分组为组2：2位抢占优先级，2位响应优先级
+//	uart_init(115200);	 	//串口初始化为115200 
+// 	while(SD_Init())//检测不到SD卡
+//	{
+//		PCout(13)=~PCout(13);
+//	}
+//	show_sdcard_info();	//打印SD卡相关信息
+//	while(1)
+//	{
+//		
+//	}   
+//}
 
 

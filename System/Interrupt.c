@@ -1,14 +1,14 @@
 #include "stm32f10x.h"                  // Device header
 #include "Interrupt.h"
 #include "sys.h"
-#include "OLED.h"
+#include "oled.h"
 #include "ICM_42688_P.h"
 #include "bmp280.h"
 extern GYRO Gyro_Get;
 extern ACC Acc_Get;
 extern TEMP Temp;
 extern BMP_280 bmp280;
-void EXIT_INT(){
+void EXTI_INT(){
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure;		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
@@ -50,15 +50,16 @@ void EXTI0_IRQHandler(void)
 			{
 				PCout(13)=~PCout(13);
 				GYRO_ACC_TEMP_GET();
-				printf("%.2f,%.2f,%.2f£¬%.2f\r\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,bmp280.asl);
-//				OLED_ShowSignedNum(1, 1, Acc_Get.X, 5);
-//				OLED_ShowSignedNum(2, 1, Acc_Get.Y, 5);
-//				OLED_ShowSignedNum(3, 1, Acc_Get.Z, 5);
-//				OLED_ShowSignedNum(1, 7, Gyro_Get.X, 5);
-//				OLED_ShowSignedNum(2, 7, Gyro_Get.Y, 5);
-//				OLED_ShowSignedNum(3, 7, Gyro_Get.Z, 5);
-//				OLED_ShowSignedNum(1, 1, Temp.T, 5);
-//				OLED_ShowSignedNum(4, 1, (int)bmp280.asl, 5);
+				printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
+//				OLED_ShowNum(0, 0, Acc_Get.X, 5, 8, 1);
+//				OLED_ShowNum(0,8,  Acc_Get.Y, 5, 8, 1);
+//				OLED_ShowNum(0,16,  Acc_Get.Z, 5, 8, 1);
+//				OLED_ShowNum(1, 7, Gyro_Get.X, 5, 4, 1);
+//				OLED_ShowNum(2, 7, Gyro_Get.Y, 5, 4, 1);
+//				OLED_ShowNum(3, 7, Gyro_Get.Z, 5, 4, 1);
+//				OLED_ShowNum(1, 1, Temp.T, 5, 4, 1);
+//				OLED_ShowNum(0,24,  (int)bmp280.asl, 5, 8, 1);
+//				OLED_Refresh();
 			}
 			EXTI_ClearITPendingBit(EXTI_Line0);
 		}
