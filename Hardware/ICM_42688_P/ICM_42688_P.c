@@ -12,8 +12,18 @@ GYRO Gyro_Get;
 ACC Acc_Get;
 TEMP Temp;
 
-void ICM_IIC_Delay(void){
-	delay_us(2);
+void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
+{
+	uint32_t Timeout;
+	Timeout = 10000;
+	while (I2C_CheckEvent(I2Cx, I2C_EVENT) != SUCCESS)
+	{
+		Timeout --;
+		if (Timeout == 0)
+		{
+			break;
+		}
+	}
 }
 /**************************************************/
 /*函数名：ICM_Port_Init;***********************/
@@ -22,157 +32,27 @@ void ICM_IIC_Delay(void){
 /*输出：无;****************************************/
 /**************************************************/
 void ICM_Port_Init(){
-	//delay_init();
-	GPIO_InitTypeDef  GPIO_InitStructure;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//先使能外设IO PORTB时钟 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6|GPIO_Pin_7;	 // 端口配置
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD; 		 //推挽输出
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
-  GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIO 
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	
-  GPIO_SetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_7);						 
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	I2C_InitTypeDef I2C_InitStructure;
+	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+	I2C_InitStructure.I2C_ClockSpeed = 100000;
+	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+	I2C_InitStructure.I2C_OwnAddress1 = 0x00;
+	I2C_Init(I2C1, &I2C_InitStructure);
+	
+	I2C_Cmd(I2C1, ENABLE);				 
 
 }	  
-
-/************************************************************************/
-/*函数名：ICM_42688_START;***********************************************/
-/*功能：通过IIC协议连接ICM_42688_P模块;**********************************/
-/*输入：无;**************************************************************/
-/*输出：0：开始信号发送成功，并且得到应答 1：未得到应答;*****************/
-/************************************************************************/
-void ICM_42688_START(){
-	ICM_SDA_OUT();
-	ICM_IIC_SDA=1;	  	  
-	ICM_IIC_SCL=1;
-	ICM_IIC_Delay();
- 	ICM_IIC_SDA=0;//START:when CLK is high,DATA change form high to low 
-	ICM_IIC_Delay();
-	ICM_IIC_SCL=0;//钳住I2C总线，准备发送或接收数据 
-}
-
-/**************************************************/
-/*函数名：ICM_42688_STOP;***********************/
-/*功能：停止IIC;************/
-/*输入：无;****************************************/
-/*输出：无;****************************************/
-/**************************************************/
-void ICM_42688_STOP(){
-	ICM_SDA_OUT();//sda线输出
-	ICM_IIC_SCL=0;
-	ICM_IIC_SDA=0;//STOP:when CLK is high DATA change form low to high
- 	ICM_IIC_Delay();
-	ICM_IIC_SCL=1; 
-	ICM_IIC_SDA=1;//发送I2C总线结束信号
-	ICM_IIC_Delay();							   	
-}
-
-/**************************************************/
-/*函数名：ICM_IIC_Wait_Ack;************************/
-/*功能：等待应答信号到来;**************************/
-/*输入：无;****************************************/
-/*输出：1，接收应答失败 0，接收应答成功;***********/
-/**************************************************/
-unsigned char ICM_IIC_Wait_Ack(void)
-{
-	u8 ucErrTime=0;
-	ICM_SDA_IN();      //SDA设置为输入  
-	ICM_IIC_SDA=1;ICM_IIC_Delay();	   
-	ICM_IIC_SCL=1;ICM_IIC_Delay();	 
-	while(ICM_READ_SDA)
-	{
-		ucErrTime++;
-		if(ucErrTime>250)
-		{
-			ICM_42688_STOP();
-			return 1;
-		}
-	}
-	ICM_IIC_SCL=0;//时钟输出0 	   
-	return 0;  
-} 
-
-/**************************************************/
-/*函数名：ICM_IIC_Ack;************************/
-/*功能：产生ACK应答;**************************/
-/*输入：无;****************************************/
-/*输出：无;***********/
-/**************************************************/
-void ICM_IIC_Ack(void)
-{
-	ICM_IIC_SCL=0;
-	ICM_SDA_OUT();
-	ICM_IIC_SDA=0;
-	ICM_IIC_Delay();
-	ICM_IIC_SCL=1;
-	ICM_IIC_Delay();
-	ICM_IIC_SCL=0;
-}
-
-/**************************************************/
-/*函数名：ICM_IIC_NAck;************************/
-/*功能：不产生ACK应答		;**************************/
-/*输入：无;****************************************/
-/*输出：无;***********/
-/**************************************************/  
-void ICM_IIC_NAck(void)
-{
-	ICM_IIC_SCL=0;
-	ICM_SDA_OUT();
-	ICM_IIC_SDA=1;
-	ICM_IIC_Delay();
-	ICM_IIC_SCL=1;
-	ICM_IIC_Delay();
-	ICM_IIC_SCL=0;
-}			
-
-/******************************************************************/
-/*函数名：ICM_IIC_Send_Byte;***************************************/
-/*功能：IIC发送一个字节,返回从机有无应答;**************************/
-/*输入：无;********************************************************/
-/*输出：无;***************************************/
-/******************************************************************/  		  
-void ICM_IIC_Send_Byte(unsigned char txd)
-{                        
-    u8 t;   
-		ICM_SDA_OUT(); 	    
-    ICM_IIC_SCL=0;//拉低时钟开始数据传输
-    for(t=0;t<8;t++)
-    {              
-        ICM_IIC_SDA=(txd&0x80)>>7;
-        txd<<=1; 	  
-		    ICM_IIC_SCL=1;
-		    ICM_IIC_Delay(); 
-		    ICM_IIC_SCL=0;	
-		    ICM_IIC_Delay();
-    }	 
-} 	
-
-/******************************************************************/
-/*函数名：ICM_IIC_Read_Byte;***************************************/
-/*功能：读1个字节，ack=1时，发送ACK，ack=0，发送nACK ;*************/
-/*输入：ack:是否发送应答;********************************************************/
-/*输出：data;***************************************/
-/******************************************************************/
-
-unsigned char ICM_IIC_Read_Byte(unsigned char ack)
-{
-	unsigned char i,receive=0;
-	ICM_SDA_IN();//SDA设置为输入
-    for(i=0;i<8;i++ )
-	{
-        ICM_IIC_SCL=0; 
-        ICM_IIC_Delay();
-				ICM_IIC_SCL=1;
-        receive<<=1;
-        if(ICM_READ_SDA)receive++;   
-					ICM_IIC_Delay(); 
-				}					 
-    if (!ack)
-        ICM_IIC_NAck();//发送nACK
-    else
-        ICM_IIC_Ack(); //发送ACK   
-    return receive;
-}
 
 /******************************************************************/
 /*函数名：ICM_IIC_WRITE_BYTE;***************************************/
@@ -182,17 +62,19 @@ unsigned char ICM_IIC_Read_Byte(unsigned char ack)
 /******************************************************************/
 unsigned char ICM_IIC_WRITE_BYTE(unsigned char RA, unsigned char data_byte){
 	
-	ICM_42688_START();
-	ICM_IIC_Send_Byte(ICM_42688_Addr_AD0_LOW_WRITE);
-	if(ICM_IIC_Wait_Ack()){
-		return 1;
-	}
-	ICM_IIC_Send_Byte(RA);
-	if(ICM_IIC_Wait_Ack()){return 1;}
-	ICM_IIC_Send_Byte(data_byte);
-	if(ICM_IIC_Wait_Ack()){return 1;}
-	ICM_42688_STOP();
-	return 0;
+	I2C_GenerateSTART(I2C1, ENABLE);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT);
+	
+	I2C_Send7bitAddress(I2C1, ICM_42688_Addr_AD0_LOW_WRITE, I2C_Direction_Transmitter);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED);
+	
+	I2C_SendData(I2C1, RA);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTING);
+	
+	I2C_SendData(I2C1, data_byte);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED);
+	
+	I2C_GenerateSTOP(I2C1, ENABLE);
 }
 
 /******************************************************************/
@@ -202,19 +84,31 @@ unsigned char ICM_IIC_WRITE_BYTE(unsigned char RA, unsigned char data_byte){
 /*输出：0 成功 1 失败;***************************************/
 /******************************************************************/
 unsigned char ICM_IIC_READ_BYTE(unsigned char RA, unsigned char *data){
-	ICM_42688_START();
-	ICM_IIC_Send_Byte(ICM_42688_Addr_AD0_LOW_WRITE);
-	if(ICM_IIC_Wait_Ack()){return 1;}
-	ICM_IIC_Send_Byte(RA);
-	if(ICM_IIC_Wait_Ack()){return 1;}
+		uint8_t Data;
 	
-	ICM_42688_START();
-	ICM_IIC_Send_Byte(ICM_42688_Addr_AD0_LOW_READ);
-	if(ICM_IIC_Wait_Ack()){
-		return 1;
-	}
-	*data = ICM_IIC_Read_Byte(0);
-	ICM_42688_STOP();
+	I2C_GenerateSTART(I2C1, ENABLE);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT);
+	
+	I2C_Send7bitAddress(I2C1, ICM_42688_Addr_AD0_LOW_WRITE, I2C_Direction_Transmitter);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED);
+	
+	I2C_SendData(I2C1, RA);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED);
+	
+	I2C_GenerateSTART(I2C1, ENABLE);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT);
+	
+	I2C_Send7bitAddress(I2C1, ICM_42688_Addr_AD0_LOW_WRITE, I2C_Direction_Receiver);
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED);
+	
+	I2C_AcknowledgeConfig(I2C1, DISABLE);
+	I2C_GenerateSTOP(I2C1, ENABLE);
+	
+	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_BYTE_RECEIVED);
+	Data = I2C_ReceiveData(I2C1);
+	
+	I2C_AcknowledgeConfig(I2C1, ENABLE);
+	*data = Data;
 	return 0;
 }
 

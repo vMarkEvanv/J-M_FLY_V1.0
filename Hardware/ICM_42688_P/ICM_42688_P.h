@@ -1,6 +1,7 @@
 #ifndef __ICM_42688_P_H
 #define __ICM_42688_P_H
 
+#include "stm32f10x.h"                  // Device header
 
 //IO·½ÏòÉèÖÃ
 #define ICM_SDA_IN()  {GPIOB->CRH&=0XFFFF0FFF;GPIOB->CRH|=8<<12;}
@@ -143,6 +144,7 @@
 /**CONTROL DESCRIPTIONS**/
 #define DEVICE_RESET 0X01 //DEVICE_CONFIG
 
+
 typedef struct{
     double X;
     double Y;
@@ -159,12 +161,7 @@ typedef struct{
 
 
 void ICM_Port_Init(void);
-void ICM_42688_START(void);
-void ICM_42688_STOP(void);
-unsigned char ICM_IIC_Wait_Ack(void);
-void ICM_IIC_Ack(void);
-void ICM_IIC_NAck(void);
-void ICM_IIC_Send_Byte(unsigned char txd);
+
 unsigned char ICM_IIC_Read_Byte(unsigned char ack);
 unsigned char ICM_IIC_WRITE_BYTE(unsigned char RA, unsigned char data_byte);
 
@@ -172,4 +169,6 @@ unsigned char ICM_INIT(void);
 unsigned char ICM_Gyroscope_INIT(void);
 unsigned char ICM_ACC_INIT(void);
 unsigned char GYRO_ACC_TEMP_GET(void);
+
+void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT);
 #endif 

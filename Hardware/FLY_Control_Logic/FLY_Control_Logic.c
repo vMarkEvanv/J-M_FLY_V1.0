@@ -56,6 +56,7 @@ void FLY_BIOS_INIT(){
 }
 
 
+
 void Attitude_Calculate(){
 	attu.X = Gyro_Get.X;
 }
