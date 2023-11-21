@@ -167,7 +167,7 @@ void bmp280GetData(float* pressure,float* temperature,float* asl)
 	*temperature=(float)t;                                                     /*单位度*/
 	*pressure=(float)p ;	                                                   /*单位hPa*/	
 	
-	*asl=bmp280PressureToAltitude(pressure);	                               /*转换成海拔*/	
+	*asl=pressureAndTemperatureToAltitude(*pressure, *temperature);	                               /*转换成海拔*/	
 }
 
 #define CONST_PF 0.1902630958	                                               //(1/5.25588f) Pressure factor
@@ -186,4 +186,31 @@ static float bmp280PressureToAltitude(float* pressure/*, float* groundPressure, 
     {
         return 0;
     }
+}
+
+float pressureAndTemperatureToAltitude(float pressure, float temperature) {
+    // ????????(ISA)??
+    const double seaLevelPressure = 101325.0; // ???
+    const double temperatureLapseRate = 0.0065; // ????????(???/?)
+
+    // ?????????
+    const double seaLevelTemperature = 288.15; // ???
+
+    // ?????????????
+    double altitude = (seaLevelPressure / pressure) - 1.0;
+    altitude = pow(altitude, 1.0 / 5.25588);
+    altitude = (1.0 - altitude) * temperatureLapseRate / 0.0065;
+
+    // ?????????????????????
+    double adjustedTemperature = seaLevelTemperature - altitude * temperatureLapseRate;
+
+    // ???????????
+    double adjustedPressure = seaLevelPressure * pow(adjustedTemperature / seaLevelTemperature, 5.25588);
+
+    // ??????????????
+    altitude = (adjustedPressure / pressure) - 1.0;
+    altitude = pow(altitude, 1.0 / 5.25588);
+    altitude = (1.0 - altitude) * temperatureLapseRate / 0.0065;
+		
+    return altitude;
 }

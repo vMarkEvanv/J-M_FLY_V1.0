@@ -98,6 +98,6 @@ void TIM4_IRQHandler(void)
 		PCout(13) = ~PCout(13);
 		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
 		GYRO_ACC_TEMP_GET();
-		printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
+		printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z,bmp280.asl);
 	}
 }

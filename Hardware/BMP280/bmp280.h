@@ -42,7 +42,7 @@ typedef struct{
 
 bool bmp280Init(void);
 void bmp280GetData(float* pressure, float* temperature, float* asl);
-
+float pressureAndTemperatureToAltitude(float pressure, float temperature);
 #endif
 
 

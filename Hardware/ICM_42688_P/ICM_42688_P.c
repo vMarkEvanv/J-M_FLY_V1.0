@@ -43,7 +43,7 @@ void ICM_Port_Init(){
 	
 	I2C_InitTypeDef I2C_InitStructure;
 	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-	I2C_InitStructure.I2C_ClockSpeed = 100000;
+	I2C_InitStructure.I2C_ClockSpeed = 1000000;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
@@ -75,6 +75,7 @@ unsigned char ICM_IIC_WRITE_BYTE(unsigned char RA, unsigned char data_byte){
 	IIC_WaitEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED);
 	
 	I2C_GenerateSTOP(I2C1, ENABLE);
+	return 0;
 }
 
 /******************************************************************/
@@ -121,21 +122,21 @@ unsigned char ICM_IIC_READ_BYTE(unsigned char RA, unsigned char *data){
 unsigned char ICM_INIT(){
 	if(ICM_IIC_WRITE_BYTE(DEVICE_CONFIG,0x00)) return 1;//Software reset configuration and SPI mode selection
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(DRIVE_CONFIG,0x05)) return 1;//Control the communication speed(I guess)
+	if(ICM_IIC_WRITE_BYTE(DRIVE_CONFIG,0x05)) return 2;//Control the communication speed(I guess)
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(INT_CONFIG,0x02)) return 1;//interrupt settings
+	if(ICM_IIC_WRITE_BYTE(INT_CONFIG,0x02)) return 3;//interrupt settings
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(PWR_MGMT0,0x0F)) return 1;//power register of sensors(it won't working if we don't turn it on)
+	if(ICM_IIC_WRITE_BYTE(PWR_MGMT0,0x0F)) return 4;//power register of sensors(it won't working if we don't turn it on)
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(INT_CONFIG1,0x00)) return 1;//this register is to set the interrupt port's Interrupt pulse duration (more details on datasheet)
+	if(ICM_IIC_WRITE_BYTE(INT_CONFIG1,0x00)) return 5;//this register is to set the interrupt port's Interrupt pulse duration (more details on datasheet)
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(INT_SOURCE0,0x08)) return 1;//setting interrupt port's interrupt source
+	if(ICM_IIC_WRITE_BYTE(INT_SOURCE0,0x08)) return 6;//setting interrupt port's interrupt source
 	delay_ms(50);
-	if(ICM_Gyroscope_INIT()) return 1;//陀螺仪初始化
+	if(ICM_Gyroscope_INIT()) return 7;//陀螺仪初始化
 	delay_ms(50);
-	if(ICM_ACC_INIT()) return 1;//加速度计初始化
+	if(ICM_ACC_INIT()) return 8;//加速度计初始化
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(SELF_TEST_CONFIG,0x1F)) return 1;//自检
+	if(ICM_IIC_WRITE_BYTE(SELF_TEST_CONFIG,0x1F)) return 9;//自检
 	delay_ms(50);
 	return 0;
 }
