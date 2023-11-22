@@ -6,9 +6,15 @@ typedef struct{
 	double Y;
 	double Z;
 }ATTU;
-
+typedef struct{
+	double X;
+	double Y;
+	double Z;
+}FIX_VALUE;
 
 void FLY_BIOS_INIT(void);
+void Attitude_Calculate(void);
+
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc);
 void TIM4_IRQHandler(void);
 #endif

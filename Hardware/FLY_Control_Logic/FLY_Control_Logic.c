@@ -15,7 +15,14 @@ extern BMP_280 bmp280;
 ATTU attu;
 ATTU last_attu;
 ATTU delta_attu;
+FIX_VALUE FIXED_VALUE;
 
+/******************************************************************/
+/*函数名：FLY_BIOS_INIT;***************************************/
+/*功能：飞控基本传感器初始化;*************/
+/*输入：无;********************************************************/
+/*输出：0 成功 1 失败;***************************************/
+/******************************************************************/
 void FLY_BIOS_INIT(){
 	//指示灯初始化
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
@@ -47,18 +54,45 @@ void FLY_BIOS_INIT(){
 	
 	//黑匣子初始化
 	SD_Init();
+	
+	FIXED_VALUE.X =0;
+	FIXED_VALUE.Y =0;
+	FIXED_VALUE.Z =0;
+	
+	double temp_x = 0;
+	double temp_y = 0;
+	double temp_z = 0;
+	
+	int n = 100;
+	while(n--){
+		GYRO_ACC_TEMP_GET();
+		temp_x += Gyro_Get.X;
+		temp_y += Gyro_Get.Y;
+		temp_z += Gyro_Get.Z;
+	}
+	FIXED_VALUE.X = temp_x/100.0;
+	FIXED_VALUE.Y = temp_y/100.0;
+	FIXED_VALUE.Z = temp_z/100.0;
 // 	while(SD_Init())//检测不到SD卡
 //	{
 //		PCout(13)=~PCout(13);
 //	}
-	
+	CH9141_Init();
+	CH9141_EN();
 
 }
 
 
-
+/******************************************************************/
+/*函数名：ICM_Gyroscope_INIT;***************************************/
+/*功能：ICM陀螺仪初始化;*************/
+/*输入：无;********************************************************/
+/*输出：0 成功 1 失败;***************************************/
+/******************************************************************/
 void Attitude_Calculate(){
-	attu.X = Gyro_Get.X;
+	attu.X += Gyro_Get.X*0.005;
+	attu.Y += Gyro_Get.Y*0.005;
+	attu.Z += Gyro_Get.Z*0.005;
 }
 
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc)
@@ -95,9 +129,10 @@ void TIM4_IRQHandler(void)
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) == SET)
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
-		PCout(13) = ~PCout(13);
-		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
+		//PCout(13) = ~PCout(13);
 		GYRO_ACC_TEMP_GET();
-		printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",Acc_Get.X,Acc_Get.Y,Acc_Get.Z,Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z,bmp280.asl);
+		Attitude_Calculate();
+		
+		
 	}
 }

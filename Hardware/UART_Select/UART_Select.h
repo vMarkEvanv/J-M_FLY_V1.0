@@ -6,9 +6,9 @@
 #define USART3_MAX_SEND_LEN		600					//最大发送缓存字节数
 #define USART3_RX_EN 			1					//0,不接收;1,接收.
 
-#define OTHER_EN() {GPIO_ResetBits(GPIOA,GPIO_Pin_6);GPIO_SetBits(GPIOA,GPIO_Pin_7);GPIO_SetBits(GPIOB,GPIO_Pin_1);}
-#define CH9141_EN() {GPIO_ResetBits(GPIOA,GPIO_Pin_7);GPIO_SetBits(GPIOA,GPIO_Pin_6);GPIO_SetBits(GPIOB,GPIO_Pin_1);}
-#define OFFCIRCLE_EN() {GPIO_ResetBits(GPIOB,GPIO_Pin_1);GPIO_SetBits(GPIOA,GPIO_Pin_7);GPIO_SetBits(GPIOA,GPIO_Pin_6);}
+#define OTHER_EN() {GPIO_SetBits(GPIOA,GPIO_Pin_6);GPIO_ResetBits(GPIOA,GPIO_Pin_7);GPIO_ResetBits(GPIOB,GPIO_Pin_1);}
+#define CH9141_EN() {GPIO_SetBits(GPIOA,GPIO_Pin_7);GPIO_ResetBits(GPIOA,GPIO_Pin_6);GPIO_ResetBits(GPIOB,GPIO_Pin_1);}
+#define OFFCIRCLE_EN() {GPIO_SetBits(GPIOB,GPIO_Pin_1);GPIO_ResetBits(GPIOA,GPIO_Pin_7);GPIO_ResetBits(GPIOA,GPIO_Pin_6);}
 	
 extern u8  USART3_RX_BUF[USART3_MAX_RECV_LEN]; 		//接收缓冲,最大USART3_MAX_RECV_LEN字节
 extern u8  USART3_TX_BUF[USART3_MAX_SEND_LEN]; 		//发送缓冲,最大USART3_MAX_SEND_LEN字节

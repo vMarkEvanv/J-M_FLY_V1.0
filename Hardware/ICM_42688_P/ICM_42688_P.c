@@ -2,15 +2,19 @@
 #include "stm32f10x.h"                  // Device header
 #include "delay.h"
 #include "sys.h"
-
+#include "FLY_Control_Logic.h"
+#include "math.h"
+#define pi 3.1415926
 unsigned char ICM_42688_Addr_AD0_LOW_READ = 0xD1;   //AD0低电平地址的读
 unsigned char ICM_42688_Addr_AD0_HIGH_READ = 0xD3;	 //AD0高电平地址的读
 unsigned char ICM_42688_Addr_AD0_LOW_WRITE = 0xD0;	 //AD0低电平地址的写
 unsigned char ICM_42688_Addr_AD0_HIGH_WRITE = 0xD2; //AD0高电平地址的写
 
 GYRO Gyro_Get;
+GYRO Gyro_Last;
 ACC Acc_Get;
 TEMP Temp;
+extern FIX_VALUE FIXED_VALUE;
 
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
 {
@@ -150,7 +154,7 @@ unsigned char ICM_INIT(){
 unsigned char ICM_Gyroscope_INIT(){
 	if(ICM_IIC_WRITE_BYTE(GYRO_CONFIG0,0x06)) return 1;//调整采样率和ODR
 	delay_ms(50);
-	if(ICM_IIC_WRITE_BYTE(GYRO_CONFIG1,0x16)) return 1;//调整带宽和滤波次数
+	if(ICM_IIC_WRITE_BYTE(GYRO_CONFIG1,0x1A)) return 1;//调整带宽和滤波次数
 	delay_ms(50);
 	if(ICM_IIC_WRITE_BYTE(GYRO_ACCEL_CONFIG0,0x11)) return 1;//调整陀螺仪和加速度计的低通滤波器带宽
 	delay_ms(50);
@@ -172,6 +176,12 @@ unsigned char ICM_ACC_INIT(){
 	
 }
 
+double myabs(double f){
+	if(f<0){
+		return -f;
+	}
+	return f;
+}
 /******************************************************************/
 /*函数名：GYRO_ACC_TEMP_GET;***************************************/
 /*功能：获取陀螺仪，加速度计，温度数据;*************/
@@ -190,7 +200,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Temp.T = (Counting_Temp / 132.48) + 25;
 	
-	//X轴陀螺仪读取
+	//X轴陀螺仪读取 ±2000dps
 	if(ICM_IIC_READ_BYTE(GYRO_DATA_X1,&temp))return 1;
 	Counting_Temp = temp;
 	Counting_Temp = Counting_Temp << 8;
@@ -199,7 +209,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Gyro_Get.X = (Counting_Temp*1.0)/32767.0*2000;
 	
-	//Y轴陀螺仪读取
+	//Y轴陀螺仪读取 ±2000dps
 	if(ICM_IIC_READ_BYTE(GYRO_DATA_Y1,&temp))return 1;
 	Counting_Temp = temp;
 	Counting_Temp = Counting_Temp << 8;
@@ -208,7 +218,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Gyro_Get.Y = (Counting_Temp*1.0)/32767.0*2000;
 	
-	//Z轴陀螺仪读取
+	//Z轴陀螺仪读取 ±2000dps
 	if(ICM_IIC_READ_BYTE(GYRO_DATA_Z1,&temp))return 1;
 	Counting_Temp = temp;
 	Counting_Temp = Counting_Temp << 8;
@@ -244,5 +254,15 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Acc_Get.Z = (Counting_Temp*1.0)/32767.0*16.0*9.8;
 	
+	Gyro_Get.X -= FIXED_VALUE.X;
+	Gyro_Get.Y -= FIXED_VALUE.Y;
+	Gyro_Get.Z -= FIXED_VALUE.Z;
+	
+	if(myabs(Gyro_Get.X) <= 0.3){Gyro_Get.X = 0;}
+	if(myabs(Gyro_Get.Y) <= 0.3){Gyro_Get.Y = 0;}
+	if(myabs(Gyro_Get.Z) <= 0.3){Gyro_Get.Z = 0;}
+	
+	//printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",myabs(Gyro_Get.X - Gyro_Last.X),myabs(Gyro_Get.Y - Gyro_Last.Y),myabs(Gyro_Get.Z - Gyro_Last.Z),Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
+
 	return 0;
 }

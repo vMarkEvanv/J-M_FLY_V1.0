@@ -169,6 +169,6 @@ unsigned char ICM_INIT(void);
 unsigned char ICM_Gyroscope_INIT(void);
 unsigned char ICM_ACC_INIT(void);
 unsigned char GYRO_ACC_TEMP_GET(void);
-
+double myabs(double f);
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT);
 #endif 
