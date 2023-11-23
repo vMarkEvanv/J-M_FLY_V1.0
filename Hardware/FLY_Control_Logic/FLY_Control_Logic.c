@@ -55,31 +55,32 @@ void FLY_BIOS_INIT(){
 	//黑匣子初始化
 	SD_Init();
 	
-	FIXED_VALUE.X =0;
-	FIXED_VALUE.Y =0;
-	FIXED_VALUE.Z =0;
+//	FIXED_VALUE.X =0;
+//	FIXED_VALUE.Y =0;
+//	FIXED_VALUE.Z =0;
+//	
+//	double temp_x = 0;
+//	double temp_y = 0;
+//	double temp_z = 0;
+//	
+//	int n = 10000;
+//	while(n--){
+//		GYRO_ACC_TEMP_GET();
+//		temp_x += Gyro_Get.X;
+//		temp_y += Gyro_Get.Y;
+//		temp_z += Gyro_Get.Z;
+//	}
+//	FIXED_VALUE.X = temp_x/10000.0;
+//	FIXED_VALUE.Y = temp_y/10000.0;
+//	FIXED_VALUE.Z = temp_z/10000.0;
 	
-	double temp_x = 0;
-	double temp_y = 0;
-	double temp_z = 0;
 	
-	int n = 100;
-	while(n--){
-		GYRO_ACC_TEMP_GET();
-		temp_x += Gyro_Get.X;
-		temp_y += Gyro_Get.Y;
-		temp_z += Gyro_Get.Z;
-	}
-	FIXED_VALUE.X = temp_x/100.0;
-	FIXED_VALUE.Y = temp_y/100.0;
-	FIXED_VALUE.Z = temp_z/100.0;
 // 	while(SD_Init())//检测不到SD卡
 //	{
 //		PCout(13)=~PCout(13);
 //	}
 	CH9141_Init();
 	CH9141_EN();
-
 }
 
 
@@ -93,6 +94,27 @@ void Attitude_Calculate(){
 	attu.X += Gyro_Get.X*0.005;
 	attu.Y += Gyro_Get.Y*0.005;
 	attu.Z += Gyro_Get.Z*0.005;
+	
+	if(attu.X > 180.0){
+		attu.X = attu.X - 360.0;
+	}
+	else if(attu.X <= -180.0){
+		attu.X = 360.0 + attu.X;
+	}
+	
+	if(attu.Y > 180.0){
+		attu.Y = attu.Y - 360.0;
+	}
+	else if(attu.Y <= -180.0){
+		attu.Y = 360.0 + attu.Y;
+	}
+	
+	if(attu.Z > 180.0){
+		attu.Z = attu.Z - 360.0;
+	}
+	else if(attu.Z <= -180.0){
+		attu.Z = 360.0 + attu.Z;
+	}
 }
 
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc)

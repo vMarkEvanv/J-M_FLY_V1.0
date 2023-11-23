@@ -19,7 +19,6 @@ int main(void)
 	delay_init();
 	uart_init(115200);
 	FLY_BIOS_INIT();
-	
 	OLED_Init();
 	OLED_ColorTurn(0);//0正常显示，1 反色显示
   OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
@@ -33,7 +32,7 @@ int main(void)
 	{
 		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
 		//printf("%.2f,%.2f,%.2f\n",attu.X,attu.Y,attu.Z);
-		printf("%.2f,%.2f,%.2f\n",attu.X,attu.Y,attu.Z);
+		printf("%.2f,%.2f,%.2f\r\n",-attu.X,attu.Y,attu.Z);
 		
 
 	}

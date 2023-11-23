@@ -254,10 +254,15 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Acc_Get.Z = (Counting_Temp*1.0)/32767.0*16.0*9.8;
 	
-	Gyro_Get.X -= FIXED_VALUE.X;
-	Gyro_Get.Y -= FIXED_VALUE.Y;
-	Gyro_Get.Z -= FIXED_VALUE.Z;
-	
+	//ÍÓÂÝÒÇÐÞÕý
+//	Gyro_Get.X -= FIXED_VALUE.X;
+//	Gyro_Get.Y -= FIXED_VALUE.Y;
+//	Gyro_Get.Z -= FIXED_VALUE.Z;
+	Gyro_Get.X -= 101.38;
+	Gyro_Get.Y -= 110.84;
+	Gyro_Get.Z -= 118.94;
+	//printf("%.2f,%.2f,%.2f\r\n",Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
+	//ÂË²¨
 	if(myabs(Gyro_Get.X) <= 0.3){Gyro_Get.X = 0;}
 	if(myabs(Gyro_Get.Y) <= 0.3){Gyro_Get.Y = 0;}
 	if(myabs(Gyro_Get.Z) <= 0.3){Gyro_Get.Z = 0;}
