@@ -158,7 +158,11 @@ typedef struct{
 typedef struct{
     double T;
 }TEMP;
-
+typedef struct{
+	double pitch;
+	double row;
+	double yaw;
+}ATTU;
 
 void ICM_Port_Init(void);
 
@@ -171,4 +175,6 @@ unsigned char ICM_ACC_INIT(void);
 unsigned char GYRO_ACC_TEMP_GET(void);
 double myabs(double f);
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT);
+void Kalman_Filter_X(void);
+void Kalman_Filter_Y(void);
 #endif 

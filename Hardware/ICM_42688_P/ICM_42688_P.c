@@ -5,6 +5,11 @@
 #include "FLY_Control_Logic.h"
 #include "math.h"
 #define pi 3.1415926
+
+#define RAD2DEG 57.295779513
+
+ATTU attu;
+
 unsigned char ICM_42688_Addr_AD0_LOW_READ = 0xD1;   //AD0低电平地址的读
 unsigned char ICM_42688_Addr_AD0_HIGH_READ = 0xD3;	 //AD0高电平地址的读
 unsigned char ICM_42688_Addr_AD0_LOW_WRITE = 0xD0;	 //AD0低电平地址的写
@@ -169,7 +174,7 @@ unsigned char ICM_Gyroscope_INIT(){
 /*输出：无;***************************************/
 /******************************************************************/
 unsigned char ICM_ACC_INIT(){
-	if(ICM_IIC_WRITE_BYTE(ACCEL_CONFIG0,0x06)) return 1;//调整采样率和ODR
+	if(ICM_IIC_WRITE_BYTE(ACCEL_CONFIG0,0x66)) return 1;//调整采样率和ODR
 	delay_ms(50);
 	if(ICM_IIC_WRITE_BYTE(ACCEL_CONFIG1,0x0D)) return 1;//调整带宽和滤波次数
 	delay_ms(50);
@@ -240,7 +245,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	temp = 0;
 	if(ICM_IIC_READ_BYTE(ACCEL_DATA_X0,&temp))return 1;
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
-	Acc_Get.X = (Counting_Temp*1.0)/32767.0*16.0*9.8;
+	Acc_Get.X = (Counting_Temp*1.0)/32767.0*2.0*9.8;
 	
 	//Y轴加速度计读取 ±16g
 	if(ICM_IIC_READ_BYTE(ACCEL_DATA_Y1,&temp))return 1;
@@ -249,7 +254,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	temp = 0;
 	if(ICM_IIC_READ_BYTE(ACCEL_DATA_Y0,&temp))return 1;
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
-	Acc_Get.Y = (Counting_Temp*1.0)/32767.0*16.0*9.8;
+	Acc_Get.Y = (Counting_Temp*1.0)/32767.0*2.0*9.8;
 	
 	//Z轴加速度计读取 ±16g
 	if(ICM_IIC_READ_BYTE(ACCEL_DATA_Z1,&temp))return 1;
@@ -258,7 +263,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	temp = 0;
 	if(ICM_IIC_READ_BYTE(ACCEL_DATA_Z0,&temp))return 1;
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
-	Acc_Get.Z = (Counting_Temp*1.0)/32767.0*16.0*9.8;
+	Acc_Get.Z = (Counting_Temp*1.0)/32767.0*2.0*9.8;
 	
 	//陀螺仪修正
 //	Gyro_Get.X -= FIXED_VALUE.X;
@@ -277,4 +282,132 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	//printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",myabs(Gyro_Get.X - Gyro_Last.X),myabs(Gyro_Get.Y - Gyro_Last.Y),myabs(Gyro_Get.Z - Gyro_Last.Z),Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
 
 	return 0;
+}
+
+
+
+
+
+
+
+/******************************************************************/
+/*函数名：Kalman_Filter_X;***************************************/
+/*功能：pitch的卡尔曼滤波;*************/
+/*输入：无;********************************************************/
+/*输出：无;***************************************/
+/******************************************************************/
+void Kalman_Filter_X()
+{
+	static float Accel;
+	static float Gyro;
+	
+	static float angle_dot;
+	static float Q_angle=0.001;// 过程噪声的协方差
+	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
+	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
+	static float dt=0.005;//                 
+	static char  C_0 = 1;
+	static float Q_bias, Angle_err;
+	static float PCt_0, PCt_1, E;
+	static float K_0, K_1, t_0, t_1;
+	static float Pdot[4] ={0,0,0,0};
+	static float PP[2][2] = { { 1, 0 },{ 0, 1 } };
+
+	Accel=atan2(Acc_Get.Y,Acc_Get.Z)*RAD2DEG;
+	Gyro=Gyro_Get.X/16.4;
+	
+
+	attu.pitch+=(Gyro - Q_bias) * dt; //先验估计
+	Pdot[0]=Q_angle - PP[0][1] - PP[1][0]; // Pk-先验估计误差协方差的微分
+
+	Pdot[1]=-PP[1][1];
+	Pdot[2]=-PP[1][1];
+	Pdot[3]=Q_gyro;
+	PP[0][0] += Pdot[0] * dt;   // Pk-先验估计误差协方差微分的积分
+	PP[0][1] += Pdot[1] * dt;   // =先验估计误差协方差
+	PP[1][0] += Pdot[2] * dt;
+	PP[1][1] += Pdot[3] * dt;
+		
+	Angle_err = Accel - attu.pitch;	//zk-先验估计
+	
+	PCt_0 = C_0 * PP[0][0];
+	PCt_1 = C_0 * PP[1][0];
+	
+	E = R_angle + C_0 * PCt_0;
+	
+	K_0 = PCt_0 / E;
+	K_1 = PCt_1 / E;
+	
+	t_0 = PCt_0;
+	t_1 = C_0 * PP[0][1];
+
+	PP[0][0] -= K_0 * t_0;		 //后验估计误差协方差
+	PP[0][1] -= K_0 * t_1;
+	PP[1][0] -= K_1 * t_0;
+	PP[1][1] -= K_1 * t_1;
+		
+	attu.pitch	+= K_0 * Angle_err;	 //后验估计
+	Q_bias	+= K_1 * Angle_err;	 //后验估计
+	angle_dot   = Gyro - Q_bias;	 //输出值(后验估计)的微分=角速度
+}
+
+/******************************************************************/
+/*函数名：Kalman_Filter_Y;***************************************/
+/*功能：row的卡尔曼滤波;*************/
+/*输入：无;********************************************************/
+/*输出：无;***************************************/
+/******************************************************************/
+void Kalman_Filter_Y()
+{
+	static float Accel;
+	static float Gyro;
+	
+	static float angle_dot;
+	static float Q_angle=0.001;// 过程噪声的协方差
+	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
+	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
+	static float dt=0.005;//                 
+	static char  C_0 = 1;
+	static float Q_bias, Angle_err;
+	static float PCt_0, PCt_1, E;
+	static float K_0, K_1, t_0, t_1;
+	static float Pdot[4] ={0,0,0,0};
+	static float PP[2][2] = { { 1, 0 },{ 0, 1 } };
+
+	Accel=-atan2(Acc_Get.X,Acc_Get.Z)*RAD2DEG;
+	Gyro=Gyro_Get.Y/16.4;
+	
+
+	attu.row+=(Gyro - Q_bias) * dt; //先验估计
+	Pdot[0]=Q_angle - PP[0][1] - PP[1][0]; // Pk-先验估计误差协方差的微分
+
+	Pdot[1]=-PP[1][1];
+	Pdot[2]=-PP[1][1];
+	Pdot[3]=Q_gyro;
+	PP[0][0] += Pdot[0] * dt;   // Pk-先验估计误差协方差微分的积分
+	PP[0][1] += Pdot[1] * dt;   // =先验估计误差协方差
+	PP[1][0] += Pdot[2] * dt;
+	PP[1][1] += Pdot[3] * dt;
+		
+	Angle_err = Accel - attu.row;	//zk-先验估计
+	
+	PCt_0 = C_0 * PP[0][0];
+	PCt_1 = C_0 * PP[1][0];
+	
+	E = R_angle + C_0 * PCt_0;
+	
+	K_0 = PCt_0 / E;
+	K_1 = PCt_1 / E;
+	
+	t_0 = PCt_0;
+	t_1 = C_0 * PP[0][1];
+
+	PP[0][0] -= K_0 * t_0;		 //后验估计误差协方差
+	PP[0][1] -= K_0 * t_1;
+	PP[1][0] -= K_1 * t_0;
+	PP[1][1] -= K_1 * t_1;
+		
+	attu.row	+= K_0 * Angle_err;	 //后验估计
+	Q_bias	+= K_1 * Angle_err;	 //后验估计
+	angle_dot   = Gyro - Q_bias;	 //输出值(后验估计)的微分=角速度
 }

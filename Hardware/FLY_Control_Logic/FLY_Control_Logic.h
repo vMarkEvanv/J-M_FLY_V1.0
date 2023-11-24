@@ -1,11 +1,7 @@
 #ifndef __FLY_CONTROL_LOGIC_H
 #define __FLY_CONTROL_LOGIC_H
 
-typedef struct{
-	double pitch;
-	double row;
-	double yaw;
-}ATTU;
+
 typedef struct{
 	double X;
 	double Y;
