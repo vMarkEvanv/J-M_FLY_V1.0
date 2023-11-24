@@ -14,6 +14,7 @@
 extern BMP_280 bmp280;
 extern ATTU attu;
 extern GYRO Gyro_Get;
+extern unsigned int trust_val;
 int main(void)
 {
 	delay_init();
@@ -32,8 +33,8 @@ int main(void)
 	{
 		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
 		//printf("%.2f,%.2f,%.2f\n",attu.X,attu.Y,attu.Z);
-		printf("%.2f,%.2f,%.2f\r\n",-attu.X,attu.Y,attu.Z);
-		
+		printf("%.2f,%.2f,%3.2f,%d\n",attu.pitch,attu.row,attu.yaw,trust_val);
+
 
 	}
 }

@@ -2,9 +2,9 @@
 #define __FLY_CONTROL_LOGIC_H
 
 typedef struct{
-	double X;
-	double Y;
-	double Z;
+	double pitch;
+	double row;
+	double yaw;
 }ATTU;
 typedef struct{
 	double X;

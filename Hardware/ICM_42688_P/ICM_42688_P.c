@@ -14,6 +14,7 @@ GYRO Gyro_Get;
 GYRO Gyro_Last;
 ACC Acc_Get;
 TEMP Temp;
+ACC Acc_Last;
 extern FIX_VALUE FIXED_VALUE;
 
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
@@ -191,6 +192,11 @@ double myabs(double f){
 unsigned char GYRO_ACC_TEMP_GET(){
 	unsigned char temp = 0;
 	short Counting_Temp = 0;
+	
+	Acc_Last.X = Acc_Get.X;
+	Acc_Last.Y = Acc_Get.Y;
+	Acc_Last.Z = Acc_Get.Z;
+	
 	//ÎÂ¶È¶ÁÈ¡
 	if(ICM_IIC_READ_BYTE(TEMP_DATA1,&temp))return 1;
 	Counting_Temp = temp;
@@ -266,6 +272,7 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	if(myabs(Gyro_Get.X) <= 0.3){Gyro_Get.X = 0;}
 	if(myabs(Gyro_Get.Y) <= 0.3){Gyro_Get.Y = 0;}
 	if(myabs(Gyro_Get.Z) <= 0.3){Gyro_Get.Z = 0;}
+	
 	
 	//printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",myabs(Gyro_Get.X - Gyro_Last.X),myabs(Gyro_Get.Y - Gyro_Last.Y),myabs(Gyro_Get.Z - Gyro_Last.Z),Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
 
