@@ -11,6 +11,12 @@ typedef struct{
 	double Y;
 	double Z;
 }FIX_VALUE;
+typedef struct{
+	int M0;
+	int M1;
+	int M2;
+	int M3;
+}M_PWM;
 
 void FLY_BIOS_INIT(void);
 void Attitude_Calculate(void);

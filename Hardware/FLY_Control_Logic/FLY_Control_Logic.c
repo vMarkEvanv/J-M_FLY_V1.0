@@ -9,6 +9,7 @@
 #include "bmp280.h"
 #include "sys.h"
 #include "math.h"
+#include "Motor_Ctrl.h"
 
 extern GYRO Gyro_Get;
 extern ACC Acc_Get;
@@ -17,6 +18,13 @@ extern TEMP Temp;
 extern BMP_280 bmp280;
 
 unsigned int trust_val = 0;
+
+M_PWM m_pwm;
+M_PWM pitch_pwm;
+M_PWM base_pwm;
+M_PWM row_pwm;
+M_PWM yaw_pwm;
+
 ATTU attu;
 ATTU last_attu;
 ATTU delta_attu;
@@ -50,7 +58,7 @@ void FLY_BIOS_INIT(){
 	
 	//气压计初始化
 	IIC_Init();
-	while(!bmp280Init());
+	//while(!bmp280Init());
 	
 	//串口选择器初始化
 	SELECT_Port_INIT();
@@ -87,6 +95,20 @@ void FLY_BIOS_INIT(){
 //	}
 	//CH9141_Init();
 	//CH9141_EN();
+	FLY_PWM_Port_Init();
+	base_pwm.M0=50;
+	base_pwm.M1=50;
+	base_pwm.M2=50;
+	base_pwm.M3=50;
+	Set_Duty(0,0,0,0);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
+	delay_ms(500);
 }
 
 #define pi 3.1415926
@@ -183,6 +205,19 @@ void TIM4_IRQHandler(void)
 		GYRO_ACC_TEMP_GET();
 		Attitude_Calculate();
 		
+		pitch_pwm.M0 =  -30*attu.pitch*base_pwm.M0/180.0;
+		pitch_pwm.M1 =  30*attu.pitch*base_pwm.M1/180.0;
+		m_pwm.M0 = base_pwm.M0 + pitch_pwm.M0;
+		m_pwm.M1 = base_pwm.M1 + pitch_pwm.M1;
+		
+		if(m_pwm.M0<0){
+			m_pwm.M0 = 0;
+		}
+		if(m_pwm.M1<0){
+			m_pwm.M1 = 0;
+		}
+		printf("%d,%d\n",m_pwm.M0,m_pwm.M1);
+		Set_Duty(m_pwm.M0,m_pwm.M1,m_pwm.M2,m_pwm.M3);
 		
 	}
 }

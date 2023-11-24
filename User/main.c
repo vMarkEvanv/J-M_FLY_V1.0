@@ -10,7 +10,7 @@
 #include "CH9141.h"
 #include "FLY_Control_Logic.h"
 #include "bmp.h"
-
+#include "Motor_Ctrl.h"
 extern BMP_280 bmp280;
 extern ATTU attu;
 extern GYRO Gyro_Get;
@@ -26,6 +26,7 @@ int main(void)
 	OLED_Refresh();
 	OLED_ShowPicture(0,0,128,32,BMP2,1);
 	OLED_Refresh();
+	
 	TIM4_Interrupt_Init(50,7200);
 	
 	
@@ -33,7 +34,7 @@ int main(void)
 	{
 		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
 		//printf("%.2f,%.2f,%.2f\n",attu.X,attu.Y,attu.Z);
-		printf("%.2f,%.2f,%3.2f,%d\n",attu.pitch,attu.row,attu.yaw,trust_val);
+		//printf("%.2f,%.2f,%3.2f,%d\n",attu.pitch,attu.row,attu.yaw,trust_val);
 
 
 	}
