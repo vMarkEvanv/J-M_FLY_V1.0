@@ -14,7 +14,7 @@
 extern GYRO Gyro_Get;
 extern ACC Acc_Get;
 extern ACC Acc_Last;
-extern TEMP Temp;
+
 extern BMP_280 bmp280;
 
 unsigned int trust_val = 0;
@@ -25,11 +25,7 @@ M_PWM base_pwm;
 M_PWM row_pwm;
 M_PWM yaw_pwm;
 
-ATTU attu;
-ATTU last_attu;
-ATTU delta_attu;
-ATTU attu_gyro;
-FIX_VALUE FIXED_VALUE;
+
 
 /******************************************************************/
 /*函数名：FLY_BIOS_INIT;***************************************/
@@ -72,7 +68,7 @@ void FLY_BIOS_INIT(){
 //	FIXED_VALUE.X =0;
 //	FIXED_VALUE.Y =0;
 //	FIXED_VALUE.Z =0;
-//	
+
 //	double temp_x = 0;
 //	double temp_y = 0;
 //	double temp_z = 0;
@@ -122,49 +118,26 @@ double toDegrees(double radians) {
 /*输出：0 成功 1 失败;***************************************/
 /******************************************************************/
 void Attitude_Calculate(){
-	
-//	attu_gyro.pitch += 0.5*Gyro_Get.X*0.005 + 0.5*atan2(-Acc_Get.X, sqrt(Acc_Get.Y * Acc_Get.Y + Acc_Get.Z * Acc_Get.Z));
-//	attu_gyro.row += 0.5*Gyro_Get.Y*0.005 + 0.5*atan2(Acc_Get.Y, Acc_Get.Z);
-	//陀螺仪积分出的结果
-	attu.yaw += Gyro_Get.Z*0.005;
-	attu_gyro.pitch += Gyro_Get.X*0.005 ;
-	attu_gyro.row += Gyro_Get.Y*0.005;
-	
-	//加速度计计算出的结果
-	attu.pitch = atan2(Acc_Get.Y, Acc_Get.Z);
-	attu.row = atan2(-Acc_Get.X, sqrt(Acc_Get.Y * Acc_Get.Y + Acc_Get.Z * Acc_Get.Z));
-	
-	//按权重分配可信度
-	
-	trust_val = 100 - myabs((9.8 - sqrt(Acc_Get.X*Acc_Get.X+Acc_Get.Y * Acc_Get.Y + Acc_Get.Z * Acc_Get.Z))*(myabs(Acc_Last.X - Acc_Get.X)+myabs(Acc_Last.Y - Acc_Get.Y)+myabs(Acc_Last.Z - Acc_Get.Z)))*20;//可信度计算
-	attu.pitch = (1-(1.0*trust_val/100)) * attu_gyro.pitch + (1.0*trust_val/100) * toDegrees(attu.pitch);
-	attu.row = (1-(1.0*trust_val/100)) * attu_gyro.row + (1.0*trust_val/100) * toDegrees(attu.row);
-	
-	//为积分结果重新赋值一个最可信的结果
-	attu_gyro.pitch = attu.pitch;
-	attu_gyro.row = attu.row;
-	//printf("%.2f",trust_val);
-	
-	if(attu.pitch > 180.0){
-		attu.pitch = attu.pitch - 360.0;
-	}
-	else if(attu.pitch <= -180.0){
-		attu.pitch = 360.0 + attu.pitch;
-	}
-	
-	if(attu.row > 180.0){
-		attu.row = attu.row - 360.0;
-	}
-	else if(attu.row <= -180.0){
-		attu.row = 360.0 + attu.row;
-	}
-	
-	if(attu.yaw > 180.0){
-		attu.yaw = attu.yaw - 360.0;
-	}
-	else if(attu.yaw <= -180.0){
-		attu.yaw = 360.0 + attu.yaw;
-	}
+//	if(attu.pitch > 180.0){
+//		attu.pitch = attu.pitch - 360.0;
+//	}
+//	else if(attu.pitch <= -180.0){
+//		attu.pitch = 360.0 + attu.pitch;
+//	}
+//	
+//	if(attu.row > 180.0){
+//		attu.row = attu.row - 360.0;
+//	}
+//	else if(attu.row <= -180.0){
+//		attu.row = 360.0 + attu.row;
+//	}
+//	
+//	if(attu.yaw > 180.0){
+//		attu.yaw = attu.yaw - 360.0;
+//	}
+//	else if(attu.yaw <= -180.0){
+//		attu.yaw = 360.0 + attu.yaw;
+//	}
 }
 
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc)
@@ -205,8 +178,8 @@ void TIM4_IRQHandler(void)
 		GYRO_ACC_TEMP_GET();
 		Attitude_Calculate();
 		
-		pitch_pwm.M0 =  -30*attu.pitch*base_pwm.M0/180.0;
-		pitch_pwm.M1 =  30*attu.pitch*base_pwm.M1/180.0;
+//		pitch_pwm.M0 =  -30*attu.pitch*base_pwm.M0/180.0;
+//		pitch_pwm.M1 =  30*attu.pitch*base_pwm.M1/180.0;
 		m_pwm.M0 = base_pwm.M0 + pitch_pwm.M0;
 		m_pwm.M1 = base_pwm.M1 + pitch_pwm.M1;
 		

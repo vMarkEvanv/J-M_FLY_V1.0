@@ -10,12 +10,15 @@ unsigned char ICM_42688_Addr_AD0_HIGH_READ = 0xD3;	 //AD0高电平地址的读
 unsigned char ICM_42688_Addr_AD0_LOW_WRITE = 0xD0;	 //AD0低电平地址的写
 unsigned char ICM_42688_Addr_AD0_HIGH_WRITE = 0xD2; //AD0高电平地址的写
 
-GYRO Gyro_Get;
-GYRO Gyro_Last;
-ACC Acc_Get;
-TEMP Temp;
-ACC Acc_Last;
-extern FIX_VALUE FIXED_VALUE;
+GYRO Gyro_Get;//三轴角速度
+ACC Acc_Get;//三轴加速度
+TEMP Temp;//温度
+ACC Acc_Last;//上一次三轴加速度
+
+ATTU attu;//计算出的角度信息
+
+FIX_VALUE FIXED_GYRO_VALUE;//角速度计校准量
+FIX_VALUE FIXED_ACC_VALUE;//加速度计校准量
 
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
 {
@@ -260,21 +263,67 @@ unsigned char GYRO_ACC_TEMP_GET(){
 	Counting_Temp = Counting_Temp|temp ;temp = 0;
 	Acc_Get.Z = (Counting_Temp*1.0)/32767.0*16.0*9.8;
 	
-	//陀螺仪修正
-//	Gyro_Get.X -= FIXED_VALUE.X;
-//	Gyro_Get.Y -= FIXED_VALUE.Y;
-//	Gyro_Get.Z -= FIXED_VALUE.Z;
-	Gyro_Get.X -= 101.38;
-	Gyro_Get.Y -= 110.84;
-	Gyro_Get.Z -= 118.94;
-	//printf("%.2f,%.2f,%.2f\r\n",Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
+	//陀螺仪零漂修正
+	Gyro_Get.X -= FIXED_GYRO_VALUE.X;
+	Gyro_Get.Y -= FIXED_GYRO_VALUE.Y;
+	Gyro_Get.Z -= FIXED_GYRO_VALUE.Z;
+	
+	//加速度计零飘修正(保留)
+	
 	//滤波
-	if(myabs(Gyro_Get.X) <= 0.3){Gyro_Get.X = 0;}
-	if(myabs(Gyro_Get.Y) <= 0.3){Gyro_Get.Y = 0;}
-	if(myabs(Gyro_Get.Z) <= 0.3){Gyro_Get.Z = 0;}
+	if(FIXED_GYRO_VALUE.X!=0){
+		if(myabs(Gyro_Get.X) <= 0.3){Gyro_Get.X = 0;}
+		if(myabs(Gyro_Get.Y) <= 0.3){Gyro_Get.Y = 0;}
+		if(myabs(Gyro_Get.Z) <= 0.3){Gyro_Get.Z = 0;}
+	}
 	
-	
-	//printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",myabs(Gyro_Get.X - Gyro_Last.X),myabs(Gyro_Get.Y - Gyro_Last.Y),myabs(Gyro_Get.Z - Gyro_Last.Z),Gyro_Get.X,Gyro_Get.Y,Gyro_Get.Z);
-
 	return 0;
+}
+
+
+/******************************************************************/
+/*函数名：ICM_ACC_FIX;***************************************/
+/*功能：ICM加速度零飘修正（Ｔ菔庇貌坏僵;*************/
+/*输入：无;********************************************************/
+/*输出：无;***************************************/
+/******************************************************************/
+void ICM_ACC_FIX(){
+	double temp_x = 0;
+	double temp_y = 0;
+	double temp_z = 0;
+	int n = 10000;
+	while(n--){
+		GYRO_ACC_TEMP_GET();
+		temp_x += Acc_Get.X;
+		temp_y += Acc_Get.Y;
+		temp_z += Acc_Get.Z;
+	}
+	FIXED_ACC_VALUE.X = temp_x/10000.0;
+	FIXED_ACC_VALUE.Y = temp_y/10000.0;
+	FIXED_ACC_VALUE.Z = temp_z/10000.0;
+
+	
+}
+
+/******************************************************************/
+/*函数名：ICM_GYRO_FIX;***************************************/
+/*功能：ICM陀螺仪零飘修正;*************/
+/*输入：无;********************************************************/
+/*输出：无;***************************************/
+/******************************************************************/
+void ICM_GYRO_FIX(){
+	double temp_x = 0;
+	double temp_y = 0;
+	double temp_z = 0;
+	int n = 10000;
+	while(n--){
+		GYRO_ACC_TEMP_GET();
+		temp_x += Gyro_Get.X;
+		temp_y += Gyro_Get.Y;
+		temp_z += Gyro_Get.Z;
+	}
+	FIXED_GYRO_VALUE.X = temp_x/10000.0;
+	FIXED_GYRO_VALUE.Y = temp_y/10000.0;
+	FIXED_GYRO_VALUE.Z = temp_z/10000.0;
+
 }

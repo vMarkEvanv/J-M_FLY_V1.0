@@ -150,25 +150,39 @@ typedef struct{
     double Y;
     double Z;
 }GYRO;
+
 typedef struct{
     double X;
     double Y;
     double Z;
 }ACC;
+
 typedef struct{
     double T;
 }TEMP;
 
+typedef struct{
+	double X;
+	double Y;
+	double Z;
+}FIX_VALUE;
+
+typedef struct{
+	double pitch;
+	double row;
+	double yaw;
+}ATTU;
+
 
 void ICM_Port_Init(void);
-
 unsigned char ICM_IIC_Read_Byte(unsigned char ack);
 unsigned char ICM_IIC_WRITE_BYTE(unsigned char RA, unsigned char data_byte);
-
 unsigned char ICM_INIT(void);
 unsigned char ICM_Gyroscope_INIT(void);
 unsigned char ICM_ACC_INIT(void);
 unsigned char GYRO_ACC_TEMP_GET(void);
 double myabs(double f);
 void IIC_WaitEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT);
+void ICM_ACC_FIX(void);
+void ICM_GYRO_FIX(void);
 #endif 
