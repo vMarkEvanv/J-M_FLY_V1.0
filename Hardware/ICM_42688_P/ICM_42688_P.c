@@ -305,7 +305,7 @@ void Kalman_Filter_X()
 	static float Q_angle=0.001;// 过程噪声的协方差
 	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
 	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
-	static float dt=0.005;//                 
+	static float dt=0.05;//                 
 	static char  C_0 = 1;
 	static float Q_bias, Angle_err;
 	static float PCt_0, PCt_1, E;
@@ -366,7 +366,7 @@ void Kalman_Filter_Y()
 	static float Q_angle=0.001;// 过程噪声的协方差
 	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
 	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
-	static float dt=0.005;//                 
+	static float dt=0.05;//                 
 	static char  C_0 = 1;
 	static float Q_bias, Angle_err;
 	static float PCt_0, PCt_1, E;
