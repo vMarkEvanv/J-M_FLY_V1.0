@@ -9,7 +9,7 @@
 #define RAD2DEG 57.295779513
 
 ATTU attu;
-
+ATTU attu_loss;
 unsigned char ICM_42688_Addr_AD0_LOW_READ = 0xD1;   //AD0低电平地址的读
 unsigned char ICM_42688_Addr_AD0_HIGH_READ = 0xD3;	 //AD0高电平地址的读
 unsigned char ICM_42688_Addr_AD0_LOW_WRITE = 0xD0;	 //AD0低电平地址的写

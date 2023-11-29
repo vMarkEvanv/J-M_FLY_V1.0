@@ -1,5 +1,10 @@
 #include "sys.h"
 #include "usart.h"	  
+#include "FLY_Control_Logic.h"
+
+extern PID Pitch_M0_PID;
+extern PID Pitch_M1_PID;
+
 
 u8 Res=0;
 ////////////////////////////////////////////////////////////////////////////////// 	 
@@ -166,7 +171,27 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 						
 					
 				}
-				USART_SendData(USART3,Res);
+				//USART_SendData(USART3,Res);
+				if(Res==0xDD){
+							Pitch_M0_PID.Kd = Pitch_M0_PID.Kd + 0.01;
+							Pitch_M1_PID.Kd = Pitch_M1_PID.Kd + 0.01;
+							
+						}
+				if(Res==0xAA){
+							Pitch_M0_PID.Kd = Pitch_M0_PID.Kd - 0.01;
+							Pitch_M1_PID.Kd = Pitch_M1_PID.Kd - 0.01;
+							//printf("%.2f\n",Pitch_M0_PID.Kd);
+				}
+				if(Res==0xDA){
+							Pitch_M0_PID.Kp = Pitch_M0_PID.Kp + 0.01;
+							Pitch_M1_PID.Kp = Pitch_M1_PID.Kp + 0.01;
+							
+						}
+				if(Res==0xAD){
+							Pitch_M0_PID.Kp = Pitch_M0_PID.Kp - 0.01;
+							Pitch_M1_PID.Kp = Pitch_M1_PID.Kp - 0.01;
+							//printf("%.2f\n",Pitch_M0_PID.Kd);
+				}
      }
 		
 } 
