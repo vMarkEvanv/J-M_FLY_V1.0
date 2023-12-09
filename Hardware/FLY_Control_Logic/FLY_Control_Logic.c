@@ -19,16 +19,29 @@ extern BMP_280 bmp280;
 
 PID Pitch_M0_PID;
 PID Pitch_M1_PID;
+PID Pitch_M2_PID;
+PID Pitch_M3_PID;
+
+PID Row_M0_PID;
+PID Row_M1_PID;
+PID Row_M2_PID;
+PID Row_M3_PID;
+
+
 M_PWM m_pwm;
 M_PWM pitch_pwm;
-M_PWM base_pwm;
 M_PWM row_pwm;
 M_PWM yaw_pwm;
 
-double Integral_M0=0;
-double Integral_M1=0;
-double Integral_M2=0;
-double Integral_M3=0;
+double Pitch_Integral_M0=0;
+double Pitch_Integral_M1=0;
+double Pitch_Integral_M2=0;
+double Pitch_Integral_M3=0;
+
+double Row_Integral_M0=0;
+double Row_Integral_M1=0;
+double Row_Integral_M2=0;
+double Row_Integral_M3=0;
 
 extern ATTU attu;
 extern ATTU attu_loss;
@@ -108,10 +121,6 @@ void FLY_BIOS_INIT(){
 	//CH9141_Init();
 	//CH9141_EN();
 	FLY_PWM_Port_Init();
-	base_pwm.M0=200;
-	base_pwm.M1=200;
-	base_pwm.M2=200;
-	base_pwm.M3=200;
 	Set_Duty(0,0,0,0);
 	delay_ms(500);
 	delay_ms(500);
@@ -141,32 +150,20 @@ void Attitude_Calculate(){
 /******************************************************************/
 /*函数名：Load_Attu_PID;***************************************/
 /*功能：加载PID;*************/
-/*输入：无;********************************************************/
+/*输入：accelerator:油门;********************************************************/
 /*输出：无;***************************************/
 /******************************************************************/
-void Load_Attu_PID(double pitch, double row, double yaw, double goal_pitch, double goal_row, double goal_yaw){
+void Load_Attu_PID(double pitch, double row, double yaw, double goal_pitch, double goal_row, double goal_yaw, int accelerator){
 	double pitch_loss_temp = 0.0;
+	double row_loss_temp = 0.0;
+	int base_pwm = accelerator*10;
 	pitch_loss_temp = goal_pitch - pitch;
-	m_pwm.M0 = base_pwm.M0 + (int)(Pitch_M0_PID.Kp*pitch_loss_temp + Pitch_M0_PID.Ki*Integral_M0 + Pitch_M0_PID.Kd*(Gyro_Get.X));
-	m_pwm.M1 = base_pwm.M1 - (int)(Pitch_M1_PID.Kp*pitch_loss_temp + Pitch_M1_PID.Ki*Integral_M1 + Pitch_M1_PID.Kd*(Gyro_Get.X));
-	if(pitch_loss_temp>0){
-		Integral_M0 = Integral_M0 + 1;
-	}
-	else if(pitch_loss_temp<0.05&&pitch_loss_temp>-0.05){
-		Integral_M0=0;
-	}
-	else{
-		Integral_M0 = Integral_M0 - 1;
-	}
-	if(pitch_loss_temp>0){
-		Integral_M1 = Integral_M1 + 1;
-	}
-	else if(pitch_loss_temp<0.05&&pitch_loss_temp>-0.05){
-		Integral_M1=0;
-	}
-	else{
-		Integral_M1 = Integral_M1 - 1;
-	}
+	row_loss_temp = goal_row - row;
+	m_pwm.M0 = base_pwm + (int)(Pitch_M0_PID.Kp*pitch_loss_temp + Pitch_M0_PID.Ki*Pitch_Integral_M0 + Pitch_M0_PID.Kd*(Gyro_Get.X)) + (int)(Row_M0_PID.Kp*pitch_loss_temp + Row_M0_PID.Ki*Row_Integral_M0 + Row_M0_PID.Kd*(Gyro_Get.Y));
+	m_pwm.M1 = base_pwm + (int)(Pitch_M1_PID.Kp*pitch_loss_temp + Pitch_M1_PID.Ki*Pitch_Integral_M1 + Pitch_M1_PID.Kd*(Gyro_Get.X)) - (int)(Row_M1_PID.Kp*pitch_loss_temp + Row_M1_PID.Ki*Row_Integral_M1 + Row_M1_PID.Kd*(Gyro_Get.Y));
+	m_pwm.M2 = base_pwm - (int)(Pitch_M2_PID.Kp*pitch_loss_temp + Pitch_M2_PID.Ki*Pitch_Integral_M2 + Pitch_M2_PID.Kd*(Gyro_Get.X)) - (int)(Row_M2_PID.Kp*pitch_loss_temp + Row_M2_PID.Ki*Row_Integral_M2 + Row_M2_PID.Kd*(Gyro_Get.Y));
+	m_pwm.M3 = base_pwm - (int)(Pitch_M3_PID.Kp*pitch_loss_temp + Pitch_M3_PID.Ki*Pitch_Integral_M3 + Pitch_M3_PID.Kd*(Gyro_Get.X)) + (int)(Row_M3_PID.Kp*pitch_loss_temp + Row_M3_PID.Ki*Row_Integral_M3 + Row_M3_PID.Kd*(Gyro_Get.Y));
+
 }
 	
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc)
@@ -190,7 +187,7 @@ void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc)
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 
 	NVIC_Init(&NVIC_InitStructure);
@@ -206,9 +203,9 @@ void TIM4_IRQHandler(void)
 		PCout(13) = ~PCout(13);
 		GYRO_ACC_TEMP_GET();
 		Attitude_Calculate();
-		Load_Attu_PID(attu.pitch, attu.row, 0, 0, 0, 0);
+		//Load_Attu_PID(attu.pitch, attu.row, 0, 0, 0, 0);
 		//printf("%d,%d\n",m_pwm.M0,m_pwm.M1);
-		Set_Duty(m_pwm.M0,m_pwm.M1,m_pwm.M2,m_pwm.M3);
+		//Set_Duty(m_pwm.M0,m_pwm.M1,m_pwm.M2,m_pwm.M3);
 		
 	}
 }

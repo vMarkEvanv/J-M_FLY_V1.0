@@ -22,8 +22,7 @@ typedef struct{
 
 void FLY_BIOS_INIT(void);
 void Attitude_Calculate(void);
-void Load_Attu_PID(double pitch, double row, double yaw, double goal_pitch, double goal_row, double goal_yaw);
-
+void Load_Attu_PID(double pitch, double row, double yaw, double goal_pitch, double goal_row, double goal_yaw, int accelerator);
 void TIM4_Interrupt_Init(unsigned int arr, unsigned int psc);
 void TIM4_IRQHandler(void);
 #endif

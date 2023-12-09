@@ -53,7 +53,7 @@ void ICM_Port_Init(){
 	
 	I2C_InitTypeDef I2C_InitStructure;
 	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-	I2C_InitStructure.I2C_ClockSpeed = 1000000;
+	I2C_InitStructure.I2C_ClockSpeed = 500000;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
@@ -305,7 +305,7 @@ void Kalman_Filter_X()
 	static float Q_angle=0.001;// 过程噪声的协方差
 	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
 	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
-	static float dt=0.05;//                 
+	static float dt=0.06;//                 
 	static char  C_0 = 1;
 	static float Q_bias, Angle_err;
 	static float PCt_0, PCt_1, E;
@@ -366,7 +366,7 @@ void Kalman_Filter_Y()
 	static float Q_angle=0.001;// 过程噪声的协方差
 	static float Q_gyro=0.003;//0.003 过程噪声的协方差 过程噪声的协方差为一个一行两列矩阵
 	static float R_angle=0.5;// 测量噪声的协方差 既测量偏差
-	static float dt=0.05;//                 
+	static float dt=0.06;//                 
 	static char  C_0 = 1;
 	static float Q_bias, Angle_err;
 	static float PCt_0, PCt_1, E;

@@ -35,10 +35,11 @@ int main(void)
 	
 	while(1)
 	{
-		bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
+		//bmp280GetData(&bmp280.pressure,&bmp280.temperature,&bmp280.asl);
+		
 		//printf("%.2f,%.2f,%.2f\n",attu.X,attu.Y,attu.Z);
 		//printf("%.2f,%.2f,1.0\n",attu.pitch,attu.row,attu.yaw);
-	printf("%.2f,%.2f,%.2f\r\n",Pitch_M0_PID.Kd,Pitch_M0_PID.Kp,attu.pitch);
+	printf("%.2f,%.2f,%.2f\n",attu.pitch,attu.row,attu.pitch);
 
 	}
 }
